@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<title>Title</title>
+	<style>
+		*{margin: 0;padding:0; }
+		ul{list-style: none;}
+		.banner{width: 600px;height: 300px;border: 2px solid #ccc;margin: 100px auto;position: relative;overflow: hidden;}
+		.img{position: absolute;top: 0;left: 0}
+		.img li{float: left;}
+		.img li a{display: block;position: relative;}
+		.img li a span{position: absolute;z-index: 10;left:0;color: #fff;}
+		.num{position: absolute;bottom: 10px;width: 100%;text-align: center;font-size: 0;}
+		.num li{width: 10px;height: 10px;background:rgba(0,0,0,0.5);display: block;border-radius: 100%;display: inline-block;margin: 0 5px;cursor: pointer;}
+		.btn{display: none;}
+		.btn span{display: block;width: 50px;height: 100px;background: rgba(0,0,0,0.6);color: #fff;font-size: 40px;line-height: 100px;text-align: center;cursor:pointer;}
+		.btn .prev{position: absolute;left: 0;top: 50%;margin-top: -50px;}
+		.btn .next{position: absolute;right: 0;top: 50%;margin-top: -50px;}
+		.num .active{background-color: #fff;}
+	</style>
+</head>
+<body>
+<div class="banner">
+	<ul class="img">
+		<li><a href="#"><img src="img/1.jpg" alt="第1张图片"><span>1</span></a></li>
+		<li><a href="#"><img src="img/2.jpg" alt="第2张图片"><span>2</span></a></li>
+		<li><a href="#"><img src="img/3.jpg" alt="第3张图片"><span>3</span></a></li>
+		<li><a href="#"><img src="img/4.jpg" alt="第4张图片"><span>4</span></a></li>
+		<li><a href="#"><img src="img/5.jpg" alt="第5张图片"><span>5</span></a></li>
+	</ul>
+	<ul class="num"></ul>
+	<div class="btn">
+		<span class="prev"><</span>
+		<span class="next">></span>
+	</div>
+</div>
+<script src="jquery-1.11.2.min.js"></script>
+<script src="carousel.js"></script>
+<script src="slider.js"></script>
+  
+<script>
+	$(function(){
+		//原理版
+		/*var i = 0;
+		var timer = null;
+		//dom
+		var banner = $('.banner');
+		var img = $('.img');
+		var num = $('.num');
+		
+		for (var j = 0; j < img.find("li").length; j++) { //创建圆点
+			num.append('<li></li>')
+		}
+		
+		var firstimg = img.find("li").first().clone(); //复制第一张图片
+		img.append(firstimg).width(img.find("li").length * (img.find("img").width())); //将第一张图片放到最后一张图片后面，设置ul的宽度为图片张数*图片宽度
+
+		var imgLi = $('.img li');
+		var numLi = $('.num li');
+		numLi.first().addClass('active'); //给第一个圆点添加样式
+
+		
+
+		// 下一个按钮
+		$('.next').click(function(){
+			i++;
+			if (i === imgLi.length) {
+				i = 1; //这里不是i=0
+				img.css({left:0}); //保证无缝轮播，设置left值
+			}
+
+			img.stop().animate({left:-i*600},300);
+			if (i === imgLi.length - 1) {  //设置小圆点指示
+				numLi.eq(0).addClass('active').siblings().removeClass('active');
+			}else{
+				numLi.eq(i).addClass('active').siblings().removeClass('active');
+			}
+
+		});
+
+		// 上一个按钮
+		$('.prev').click(function(){
+			i--;
+			if (i === -1) {
+				i = imgLi.length - 2;
+				img.css({left:-(imgLi.length - 1)*600});
+			}
+			img.stop().animate({left:-i*600},300);
+			numLi.eq(i).addClass('active').siblings().removeClass('active');
+		});
+
+		//设置按钮的显示和隐藏
+		banner.hover(function(){
+			$('.btn').show();
+		},function(){
+			$('.btn').hide();
+		});
+
+		//鼠标划入圆点
+		numLi.mouseover(function(){
+			var _index = $(this).index();
+			img.stop().animate({left:-_index*600},150);
+			numLi.eq(_index).addClass('active').siblings().removeClass('active');
+			i = _index;//更新索引
+		});
+
+		//定时器自动播放
+		timer = setInterval(function(){
+			i++;
+			if (i === imgLi.length) {
+				i = 1;
+				img.css({left:0});
+			}
+
+			img.stop().animate({left:-i*600},300);
+			if (i === imgLi.length - 1) {
+				numLi.eq(0).addClass('active').siblings().removeClass('active');
+			}else{
+				numLi.eq(i).addClass('active').siblings().removeClass('active');
+			}
+		},2000)
+
+		//鼠标移入，暂停自动播放，移出，开始自动播放
+		banner.hover(function(){
+			clearInterval(timer);
+		},function(){
+			timer = setInterval(function(){
+				i++;
+				if (i === imgLi.length) {
+					i = 1;
+					img.css({left:0});
+				}
+
+				img.stop().animate({left:-i*600},300);
+				if (i === imgLi.length - 1) {
+					numLi.eq(0).addClass('active').siblings().removeClass('active');
+				}else{
+					numLi.eq(i).addClass('active').siblings().removeClass('active');
+				}
+			},2000)
+		})*/
+		//优化版
+		/*var banner = $('.banner');
+		var img = $('.img');
+		var num = $('.num');
+		var img_width = banner.width();//容器宽度
+		var i = 0;
+		var timer = null;
+		var autoTime = 2000;//自动切换时间间隔
+		var manualTime = 300;//手动箭头切换时间间隔
+		var dotTime = 150;//手动圆点切换时间间隔
+		
+		for (var j = 0; j < img.find("li").length; j++) { //创建圆点
+			num.append('<li></li>')
+		}
+
+		var firstimg = img.find("li").first().clone(); //复制第一张图片
+		img.append(firstimg).width(img.find("li").length * (img.find("img").width())); //将复制的第一张图片放到最后一张图片后面，设置ul的宽度为图片张数*图片宽度
+
+		var imgLi = $('.img li');
+		var numLi = $('.num li');
+		numLi.first().addClass('active'); //初始化给第一个圆点添加样式
+
+		// 下一个按钮
+		$('.next').click(function(){
+			play();
+		});
+
+		// 上一个按钮
+		$('.prev').click(function(){
+			i--;
+			if (i === -1) {
+				i = imgLi.length - 2;
+				img.css({left:-(imgLi.length - 1) * img_width});
+			}
+			img.stop().animate({left:-i * img_width},manualTime);
+			numLi.eq(i).addClass('active').siblings().removeClass('active');
+		});
+
+		//设置按钮的显示和隐藏
+		banner.hover(function(){
+			$('.btn').show();
+		},function(){
+			$('.btn').hide();
+		});
+
+		//鼠标划入圆点
+		numLi.mouseover(function(){
+			var _index = $(this).index();
+			img.stop().animate({left:-_index * img_width},dotTime);
+			numLi.eq(_index).addClass('active').siblings().removeClass('active');
+			i = _index;//更新索引
+		});
+
+		//定时器自动播放
+		timer = setInterval(function(){
+			play();
+		},autoTime);
+
+		//鼠标移入，暂停自动播放，移出，开始自动播放
+		banner.hover(function(){
+			clearInterval(timer);
+		},function(){
+			timer = setInterval(function(){
+				play();
+			},autoTime)
+		});
+
+		play = function(){
+			i++;
+			console.log(i,imgLi.length);
+			if (i === imgLi.length) {
+				i = 1;//注意此处应是1，划过第一张了
+				img.css({left:0});//立刻将图片容器移到第一张位置 保证无缝轮播，设置left值
+			}
+
+			img.stop().animate({left:-i * img_width},manualTime);
+			if (i === imgLi.length - 1) {//设置小圆点指示
+				numLi.eq(0).addClass('active').siblings().removeClass('active');
+			}else{
+				numLi.eq(i).addClass('active').siblings().removeClass('active');
+			}
+		}*/
+		
+		
+		//封装版1
+		/*$(".banner").Carousel({
+			container:$(".banner"),
+			aBox:$(".num"),
+			bBox:$(".btn"),
+			autoTime:2000,
+			manualTime:300,
+			dotTime:150
+		})*/
+		//封装版2
+		$.slider({
+			container:$(".banner"),
+			aBox:$(".num"),
+			bBox:$(".btn"),
+			autoTime:2000,
+			manualTime:300,
+			dotTime:150
+		})
+	})
+	
+</script>
+</body>
+</html>
